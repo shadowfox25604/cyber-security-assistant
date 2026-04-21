@@ -1,7 +1,7 @@
 import os
 from typing import NotRequired, Optional
 
-from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 from langgraph.checkpoint.memory import MemorySaver
 from langgraph.graph import END, START, StateGraph
@@ -10,9 +10,19 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+from system_prompt import DEFAULT_SYSTEM_PROMPT
+
 OPENAI_MODEL = os.getenv("OPENAI_MODEL")
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_BASE_URL = os.getenv("OPENAI_BASE_URL")
+
+
+def resolved_system_prompt() -> str:
+    """SYSTEM_PROMPT env overrides `system_prompt.DEFAULT_SYSTEM_PROMPT`; empty env disables the system prompt."""
+    raw = os.getenv("SYSTEM_PROMPT")
+    if raw is not None:
+        return raw.strip()
+    return DEFAULT_SYSTEM_PROMPT
 
 class CyberState(MessagesState):
     """Conversation state for AG-UI / CopilotKit (requires `messages` + cyber fields)."""
@@ -41,7 +51,9 @@ def assistant_node(state: CyberState) -> dict:
             last_question = c if isinstance(c, str) else str(c)
             break
 
-    response = llm.invoke(messages)
+    sys_text = resolved_system_prompt()
+    llm_messages = [SystemMessage(content=sys_text), *messages] if sys_text else list(messages)
+    response = llm.invoke(llm_messages)
     content = response.content
     text = content if isinstance(content, str) else str(content)
 
