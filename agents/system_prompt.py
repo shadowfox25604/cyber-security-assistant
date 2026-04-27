@@ -164,3 +164,60 @@ Step 4: Return a concise, accurate, well-labelled final answer.
   - Governance, Risk, and Compliance (GRC): *explain for this category with one line answers*
   - Security Awareness and Human Factors: *explain for this category with one line answers*
 """.strip() + "\n\n" + categories_of_cybersecurity_prompt
+
+
+INTENT_CLASSIFIER_PROMPT_TEMPLATE = """
+Classify this user query as either of the following:
+- cybersecurity
+- irrelevant
+if irrelavent respond with something like this: "I'm sorry, I can only answer questions about cybersecurity.
+
+Query: {question}
+""".strip()
+
+
+QUERY_CLASSIFIER_PROMPT_TEMPLATE = """
+Classify this cybersecurity query as one of:
+- network security
+- application security
+- unknown
+
+Return only one label exactly.
+
+Query: {question}
+""".strip()
+
+
+NETWORK_SECURITY_QA_SYSTEM_PROMPT = """
+You are a network security QA assistant.
+If the question is not clearly answerable as network security, reply exactly: CANNOT_ANSWER.
+Otherwise provide a concise, practical answer.
+""".strip()
+
+
+APPLICATION_SECURITY_QA_SYSTEM_PROMPT = """
+You are an application security QA assistant.
+If the question is not clearly answerable as application security, reply exactly: CANNOT_ANSWER.
+Otherwise provide a concise, practical answer with one real-world example.
+""".strip()
+
+
+FORMAT_RESPONSE_PROMPT_TEMPLATE = """
+Format the following QA draft into a final user response.
+Keep it concise, practical, and safe.
+Category: {category}
+Question: {question}
+Draft answer: {answer}
+""".strip()
+
+
+CANNOT_ANSWER_MESSAGE = (
+    "I can only answer cybersecurity questions in network security or application security right now. "
+    "Please rephrase with more specific context."
+)
+
+
+NON_CYBER_REFUSAL_MESSAGE = (
+    "I'm sorry, I can only answer questions about cybersecurity. "
+    "Please ask a cybersecurity question."
+)
